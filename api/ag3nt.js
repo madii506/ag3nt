@@ -50,7 +50,12 @@ async function readBody(req) {
 const timedFetch = ms => (url, opt = {}) => { const c = new AbortController(); const t = setTimeout(() => c.abort(), ms); return fetch(url, { ...opt, signal: c.signal }).finally(() => clearTimeout(t)); };
 const conns = RPCS.map(u => new Connection(u, { commitment: 'confirmed', disableRetryOnRateLimit: true, fetch: timedFetch(9000) }));
 async function rpc(fn) {
-  let last; for (const c of conns) { try { return await fn(c); } catch (e) { last = e; } }
+  let last;
+  for (let pass = 0; pass < 2; pass++) {
+    for (const c of conns) { try { return await fn(c); } catch (e) { last = e; } }
+    if (!/429|Too many|busy|timeout|aborted|fetch failed/i.test(String(last && last.message || last))) break;
+    await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+  }
   throw http(502, 'Solana RPC is busy: ' + String(last && last.message || last).replace(/https?:\/\/\S+/g, '').slice(0, 120));
 }
 async function rpcRaw(method, params) {
@@ -129,8 +134,9 @@ async function funder(addr) {
 }
 async function mintInfo(mint) {
   return cached('mint:' + mint, 60e3, async () => {
-    const r = await rpc(c => c.getParsedAccountInfo(new PublicKey(mint)));
-    const v = r && r.value;
+    // some public RPCs answer null for accounts they do not index; ask the next one before deciding
+    let v = null;
+    for (const c of conns) { try { const r = await c.getParsedAccountInfo(new PublicKey(mint)); if (r && r.value) { v = r.value; break; } } catch (e) { } }
     if (!v || !v.data || !v.data.parsed || v.data.parsed.type !== 'mint') throw http(404, 'That address is not a token mint.');
     const i = v.data.parsed.info;
     return { program: String(v.owner) === TOKEN_2022_PROGRAM_ID.toBase58() ? 'token-2022' : 'spl-token', supply: Number(i.supply) / 10 ** i.decimals, decimals: i.decimals, mintAuthority: i.mintAuthority || null, freezeAuthority: i.freezeAuthority || null, extensions: i.extensions || [] };
@@ -592,10 +598,10 @@ async function stats() {
   return cached('stats', 8000, async () => {
     await d.ready;
     const [per, recent, wanted, tot] = await Promise.all([
-      d.sql`SELECT agent, count(*)::int AS runs, sum(CASE WHEN ok THEN 1 ELSE 0 END)::int AS ok FROM ag_runs GROUP BY agent`,
-      d.sql`SELECT id, agent, subject, verdict, headline, ok, ms, extract(epoch from at)::bigint AS at FROM ag_runs ORDER BY id DESC LIMIT 30`,
+      d.sql`SELECT agent, count(*)::int AS runs, count(*)::int AS ok FROM ag_runs WHERE ok GROUP BY agent`,
+      d.sql`SELECT id, agent, subject, verdict, headline, ok, ms, extract(epoch from at)::bigint AS at FROM ag_runs WHERE ok ORDER BY id DESC LIMIT 30`,
       d.sql`SELECT id, body, votes, extract(epoch from at)::bigint AS at FROM ag_wanted ORDER BY votes DESC, id DESC LIMIT 30`,
-      d.sql`SELECT count(*)::int AS n FROM ag_runs`,
+      d.sql`SELECT count(*)::int AS n FROM ag_runs WHERE ok`,
     ]);
     return { db: true, per: Object.fromEntries(per.map(r => [r.agent, { runs: r.runs, ok: r.ok }])), recent, wanted, total: tot[0].n };
   });
@@ -619,7 +625,7 @@ module.exports = async (req, res) => {
       out.ms = Date.now() - t0; out.agent = id; out.input = [Q.get('q'), Q.get('q2')].filter(Boolean);
       let caseId = null;
       const d = db();
-      if (d && !(out.error && out.code === 400)) {
+      if (d && !out.error) {
         try {
           await d.ready;
           const slim = JSON.stringify(out).length < 40000 ? out : { ...out, rows: (out.rows || []).slice(0, 10) };
