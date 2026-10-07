@@ -80,7 +80,7 @@ nav{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:1fr auto
 .eye{font:700 12px M;letter-spacing:.12em;color:var(--mute);display:flex;align-items:center;gap:12px}
 .state{font-weight:400;letter-spacing:0;color:var(--faint)}
 .state.live::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--clear);margin-right:7px;animation:bl 1.6s steps(2) infinite}
-h2{font:800 clamp(24px,3.3vw,36px)/1.15 I;letter-spacing:-.03em;margin:12px 0 34px;max-width:860px}
+h2{font:700 clamp(40px,6vw,76px)/1 M;letter-spacing:-.05em;margin:8px 0 38px;max-width:860px}
 .rv{opacity:0;transform:translateY(22px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
 .rv.vis{opacity:1;transform:none}
 h2 .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em;margin-bottom:-.08em}
@@ -312,3 +312,5 @@ details p{color:var(--ink2);padding:0 0 20px;font-size:14.5px;max-width:68ch}
 .form .run:active,.dispatch button:active,.want button:active{transform:scale(.96)}
 @media (max-width:640px){.tk img{width:30px;height:30px}.tk{margin-right:30px}}
 @media (prefers-reduced-motion:reduce){.tin{animation:none}}
+
+.dispatch{margin-top:34px}
