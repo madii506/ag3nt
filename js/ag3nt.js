@@ -34,35 +34,68 @@
   const RANKS = [[0, 'RECRUIT'], [25, 'FIELD AGENT'], [100, 'SPECIAL AGENT'], [500, 'DIRECTOR']];
   const rankOf = n => { let i = 0; RANKS.forEach((r, k) => { if (n >= r[0]) i = k; }); return { i, name: RANKS[i][1], next: RANKS[i + 1] || null }; };
 
-  /* ---------------- the field: a dot grid with a magnifying glass drifting over it ---------------- */
+  /* ---------------- the field: chain data raining down a dot grid, a magnifying glass reading it ---------------- */
   (() => {
     const cv = $('#field'), x = cv.getContext('2d'); let W, H, D = Math.min(2, devicePixelRatio || 1), raf = 0, last = 0;
-    const size = () => { W = innerWidth; H = innerHeight; cv.width = W * D; cv.height = H * D; };
-    const P = { x: null, y: null, t: 0, lx: 0, ly: 0 };
+    const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz', CH = () => B58[Math.random() * 58 | 0];
+    const G = 22, P = { x: null, y: null, t: 0, lx: 0, ly: 0 };
+    let cols = 0, runs = [], sparks = [], vel = 0, lastY = scrollY;
+    const size = () => {
+      W = innerWidth; H = innerHeight; cv.width = W * D; cv.height = H * D; cols = Math.ceil(W / G);
+      runs = Array.from({ length: Math.round(cols / 4.2) }, () => spawn(true));
+    };
+    function spawn(anywhere) {
+      const len = 6 + (Math.random() * 14 | 0);
+      return { c: Math.random() * cols | 0, y: anywhere ? Math.random() * H : -len * 16 - Math.random() * 200, v: 40 + Math.random() * 120, len, ch: Array.from({ length: len }, CH), a: .12 + Math.random() * .2 };
+    }
     addEventListener('pointermove', e => { if (e.pointerType === 'mouse') { P.x = e.clientX; P.y = e.clientY; P.t = performance.now(); } }, { passive: true });
     size(); addEventListener('resize', size);
     function draw(t) {
       raf = requestAnimationFrame(draw);
-      if (t - last < 30) return; last = t;
+      const dt = Math.min(80, t - last); if (dt < 33) return; last = t;
+      vel += ((scrollY - lastY) - vel) * .2; lastY = scrollY;
       x.setTransform(D, 0, 0, D, 0, 0); x.clearRect(0, 0, W, H);
-      const g = 24, R = Math.min(130, W * .16);
+      const R = Math.min(140, W * .17);
       let lx = W * (.5 + .38 * Math.sin(t / 9000)), ly = H * (.5 + .34 * Math.sin(t / 6100 + 1.3));
       if (P.x != null && t - P.t < 4000) { const k = Math.min(1, (4000 - (t - P.t)) / 1200); P.lx += (P.x - P.lx) * .08; P.ly += (P.y - P.ly) * .08; lx += (P.lx - lx) * k; ly += (P.ly - ly) * k; } else { P.lx = lx; P.ly = ly; }
-      const sy = (scrollY * .15) % g;
-      for (let yy = -g; yy < H + g; yy += g) for (let xx = 0; xx < W + g; xx += g) {
-        const px = xx + ((yy / g | 0) % 2) * g / 2, py = yy - sy;
-        const d = Math.hypot(px - lx, py - ly);
-        if (d < R) {
-          const k = 1 - d / R, mx = lx + (px - lx) * (1 - .35 * k), my = ly + (py - ly) * (1 - .35 * k);
-          x.fillStyle = `rgba(20,20,22,${.16 + .3 * k})`; x.beginPath(); x.arc(mx, my, 1.1 + 2.4 * k, 0, 7); x.fill();
-        } else { x.fillStyle = 'rgba(20,20,22,.13)'; x.fillRect(px - .75, py - .75, 1.5, 1.5); }
+      // the grid
+      const sy = (scrollY * .15) % G;
+      x.fillStyle = 'rgba(20,20,22,.10)';
+      for (let yy = -G; yy < H + G; yy += G) for (let xx = 0; xx < W + G; xx += G) { const px = xx + ((yy / G | 0) % 2) * G / 2, py = yy - sy; if (Math.hypot(px - lx, py - ly) > R) x.fillRect(px - .7, py - .7, 1.4, 1.4); }
+      // the rain: base58 runs falling down columns, a dark head and a fading tail; scrolling speeds them up
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      const boost = 1 + Math.min(4, Math.abs(vel) / 18);
+      for (const r of runs) {
+        r.y += r.v * boost * dt / 1000;
+        if (Math.random() < .08) r.ch[Math.random() * r.len | 0] = CH();
+        const cx = r.c * G + G / 2;
+        for (let i = 0; i < r.len; i++) {
+          const cy = r.y - i * 16; if (cy < -20 || cy > H + 20) continue;
+          const d = Math.hypot(cx - lx, cy - ly), inLens = d < R, k = inLens ? 1 - d / R : 0;
+          const al = (i === 0 ? r.a * 2.4 : r.a * (1 - i / r.len)) * (inLens ? 1.8 : 1);
+          x.fillStyle = `rgba(20,20,22,${Math.min(.85, al)})`;
+          x.font = `${i === 0 ? 700 : 400} ${Math.round(12 + 7 * k)}px M, monospace`;
+          x.fillText(r.ch[i], inLens ? lx + (cx - lx) * (1 + .25 * k) : cx, inLens ? ly + (cy - ly) * (1 + .25 * k) : cy);
+        }
+        if (r.y - r.len * 16 > H) Object.assign(r, spawn(false));
       }
-      x.strokeStyle = 'rgba(20,20,22,.22)'; x.lineWidth = 2; x.beginPath(); x.arc(lx, ly, R, 0, 7); x.stroke();
-      x.lineWidth = 7; x.lineCap = 'round'; x.strokeStyle = 'rgba(20,20,22,.16)';
-      x.beginPath(); x.moveTo(lx + R * .72, ly + R * .72); x.lineTo(lx + R * 1.22, ly + R * 1.22); x.stroke();
+      // churn: single characters that flash in and out on the grid
+      if (Math.random() < .5) sparks.push({ x: (Math.random() * cols | 0) * G + G / 2, y: (Math.random() * (H / G) | 0) * G, life: 0, max: 8 + Math.random() * 30, ch: CH() });
+      sparks = sparks.filter(sp => sp.life++ < sp.max);
+      x.font = '400 11px M, monospace';
+      for (const sp of sparks) { if (Math.random() < .3) sp.ch = CH(); x.fillStyle = `rgba(20,20,22,${.22 * Math.sin(Math.PI * sp.life / sp.max)})`; x.fillText(sp.ch, sp.x, sp.y); }
+      // the lens: magnified dots, a rim and a handle
+      for (let yy = -G; yy < H + G; yy += G) for (let xx = 0; xx < W + G; xx += G) {
+        const px = xx + ((yy / G | 0) % 2) * G / 2, py = yy - sy, d = Math.hypot(px - lx, py - ly);
+        if (d < R) { const k = 1 - d / R; x.fillStyle = `rgba(20,20,22,${.14 + .26 * k})`; x.beginPath(); x.arc(lx + (px - lx) * (1 + .25 * k), ly + (py - ly) * (1 + .25 * k), 1 + 2.2 * k, 0, 7); x.fill(); }
+      }
+      x.fillStyle = 'rgba(250,249,246,.18)'; x.beginPath(); x.arc(lx, ly, R, 0, 7); x.fill();
+      x.strokeStyle = 'rgba(20,20,22,.26)'; x.lineWidth = 2.5; x.beginPath(); x.arc(lx, ly, R, 0, 7); x.stroke();
+      x.lineWidth = 8; x.lineCap = 'round'; x.strokeStyle = 'rgba(20,20,22,.18)';
+      x.beginPath(); x.moveTo(lx + R * .72, ly + R * .72); x.lineTo(lx + R * 1.24, ly + R * 1.24); x.stroke();
     }
-    if (!reduce) { raf = requestAnimationFrame(draw); document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else if (!raf) raf = requestAnimationFrame(draw); }); }
-    else draw(0);
+    if (!reduce) { raf = requestAnimationFrame(draw); document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else if (!raf) { last = performance.now(); raf = requestAnimationFrame(draw); } }); }
+    else draw(40);
   })();
 
   /* ---------------- smooth scroll: Lenis drives the page, every jump eases ---------------- */
