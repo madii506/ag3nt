@@ -19,7 +19,7 @@
 <link rel="apple-touch-icon" href="/img/apple.png">
 <link rel="preload" href="/fonts/SpaceMono-Bold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/SpaceMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/css/ag3nt.css?v=3">
+<link rel="stylesheet" href="/css/ag3nt.css?v=4">
 </head>
 <body>
 <canvas id="field" aria-hidden="true"></canvas>
@@ -35,7 +35,6 @@
  <div class="hero-in" id="heroIn">
   <div class="faces" id="faces" aria-hidden="true"><img class="face on" src="/img/a-vera.png" alt="" width="132" height="132"></div>
   <h1 class="word" aria-label="ag3nt"><i>a</i><i>g</i><span><i>3</i></span><i>n</i><i>t</i></h1>
-  <p class="line">pump.fun agents. one trench job each.</p>
   <form class="dispatch" id="dispatch" autocomplete="off">
     <input id="dIn" spellcheck="false" autocapitalize="off" placeholder="paste a coin, a wallet, or describe the job" aria-label="what should an agent check">
     <button type="submit">CHECK</button>
@@ -58,16 +57,16 @@
 <main>
   <section class="band" id="agents">
     <div class="wrap">
-      <p class="eye">01 — THE AGENTS</p>
-      <h2>Nine agents. Each one has a name, a gadget and one job.</h2>
+      <p class="eye">01</p>
+      <h2>Agents</h2>
       <div class="roster" id="roster"></div>
     </div>
   </section>
 
   <section class="band alt" id="desk">
     <div class="wrap">
-      <p class="eye">02 — CASE DESK <span class="state" id="deskState"></span></p>
-      <h2>Pick an agent. Hand it the address. Get the case file.</h2>
+      <p class="eye">02 <span class="state" id="deskState"></span></p>
+      <h2>Case desk</h2>
       <div class="desk">
         <div class="pick" id="pick" role="tablist"></div>
         <div class="work">
@@ -84,16 +83,16 @@
 
   <section class="band" id="live">
     <div class="wrap">
-      <p class="eye">03 — LIVE <span class="state" id="liveState"></span></p>
-      <h2>Every case is public. These are the latest.</h2>
+      <p class="eye">03 <span class="state" id="liveState"></span></p>
+      <h2>Live</h2>
       <ol class="cases" id="cases"></ol>
     </div>
   </section>
 
   <section class="band alt" id="ranks">
     <div class="wrap">
-      <p class="eye">04 — RANKS</p>
-      <h2>Agents climb by cases closed. Nobody gets promoted for free.</h2>
+      <p class="eye">04</p>
+      <h2>Ranks</h2>
       <ol class="ladder" id="ladder">
         <li><b>RECRUIT</b><span>0 cases</span></li>
         <li><b>FIELD AGENT</b><span>25 cases</span></li>
@@ -106,8 +105,8 @@
 
   <section class="band" id="wanted">
     <div class="wrap">
-      <p class="eye">05 — WANTED</p>
-      <h2>No agent for your job yet? Post it. The most wanted one gets the next number.</h2>
+      <p class="eye">05</p>
+      <h2>Wanted</h2>
       <form class="want" id="wantForm" autocomplete="off">
         <span class="pre">an agent that</span>
         <input id="wantIn" maxlength="140" spellcheck="false" placeholder="tells me when a dev wallet sells">
@@ -119,8 +118,8 @@
 
   <section class="band alt" id="faq">
     <div class="wrap">
-      <p class="eye">06 — QUESTIONS</p>
-      <h2>The obvious ones.</h2>
+      <p class="eye">06</p>
+      <h2>Questions</h2>
       <div class="qa">
         <details><summary>Are the agents AI?</summary><p>No language model decides anything. Each agent is a fixed program with one job that reads public Solana data: RPC, pump.fun's coin records, Jupiter quotes and Dexscreener. The same input gives the same reading, and every case file lists the steps it took.</p></details>
         <details><summary>Do I have to connect a wallet?</summary><p>No. Eight agents only read. OTTO can also close your empty token accounts and send the rent back to you; only then does your wallet show a transaction to sign. Closing an empty account moves no tokens.</p></details>
@@ -145,6 +144,6 @@
 <span class="sr" id="sr" aria-live="polite"></span>
 
 <script src="/js/lenis.min.js?v=1"></script>
-<script src="/js/ag3nt.js?v=3"></script>
+<script src="/js/ag3nt.js?v=4"></script>
 </body>
 </html>
