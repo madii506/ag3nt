@@ -1,7 +1,7 @@
 'use strict';
 /* AG3NT: pump.fun agents, one trench job each. One serverless function behind /api/*.
  * Every agent reads public Solana data (RPC, pump.fun, Jupiter, Dexscreener). Nothing here holds a key:
- * the only transaction it builds (RENT: close empty token accounts) is signed by the user's own wallet. */
+ * the only transaction it builds (OTTO: close empty token accounts) is signed by the user's own wallet. */
 const { Connection, PublicKey, TransactionMessage, VersionedTransaction, ComputeBudgetProgram } = require('@solana/web3.js');
 const { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, MintLayout, AccountLayout, createCloseAccountInstruction } = require('@solana/spl-token');
 const BN = require('bn.js');
@@ -20,15 +20,15 @@ const B58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 /* ---------------- the roster ---------------- */
 const AGENTS = [
-  { id: 'dev', no: 1, name: 'DEV', gadget: 'magnifier', job: 'checks the dev behind any pump.fun coin', input: ['mint'], reads: 'pump.fun coin record, the dev wallet, its first funding transfer and its past launches' },
-  { id: 'bundle', no: 2, name: 'BUNDLE', gadget: 'stopwatch', job: 'finds wallets that bought in the launch block', input: ['mint'], reads: 'the coin\'s first transactions, every buyer in the launch block and what they still hold' },
-  { id: 'honey', no: 3, name: 'HONEY', gadget: 'jar', job: 'tells you if you can actually sell', input: ['mint'], reads: 'mint and freeze authority, Token-2022 extensions and a real Jupiter buy-then-sell round trip' },
-  { id: 'holders', no: 4, name: 'HOLDERS', gadget: 'clipboard', job: 'who holds the supply, pools and curves labelled', input: ['mint'], reads: 'the 20 largest token accounts and their owners' },
-  { id: 'grad', no: 5, name: 'GRAD', gadget: 'cap', job: 'coins graduating to PumpSwap right now', input: [], reads: 'pump.fun\'s migration wallet, one transaction per graduation' },
-  { id: 'link', no: 6, name: 'LINK', gadget: 'string', job: 'shows if two wallets are connected', input: ['wallet', 'wallet'], reads: 'the last 1,000 transactions of both wallets and who funded each one first' },
-  { id: 'watch', no: 7, name: 'WATCH', gadget: 'binoculars', job: 'a wallet\'s latest moves, decoded', input: ['wallet'], reads: 'the wallet\'s last 15 transactions, balance changes per coin' },
-  { id: 'pool', no: 8, name: 'POOL', gadget: 'bucket', job: 'PumpSwap pools paying the most LP fees', input: [], reads: 'live PumpSwap pool reserves, fee tiers and 24h volume' },
-  { id: 'rent', no: 9, name: 'RENT', gadget: 'keys', job: 'SOL locked in your empty token accounts', input: ['wallet'], reads: 'every SPL and Token-2022 account the wallet owns' },
+  { id: 'dev', no: 1, name: 'VERA', role: 'DEV', look: 'vera', gadget: 'magnifier', job: 'checks the dev behind any pump.fun coin', input: ['mint'], reads: 'pump.fun coin record, the dev wallet, its first funding transfer and its past launches' },
+  { id: 'bundle', no: 2, name: 'KESTREL', role: 'BUNDLE', look: 'kestrel', gadget: 'stopwatch', job: 'finds wallets that bought in the launch block', input: ['mint'], reads: 'the coin\'s first transactions, every buyer in the launch block and what they still hold' },
+  { id: 'honey', no: 3, name: 'MELI', role: 'HONEYPOT', look: 'meli', gadget: 'jar', job: 'tells you if you can actually sell', input: ['mint'], reads: 'mint and freeze authority, Token-2022 extensions and a real Jupiter buy-then-sell round trip' },
+  { id: 'holders', no: 4, name: 'CENSA', role: 'HOLDERS', look: 'censa', gadget: 'clipboard', job: 'who holds the supply, pools and curves labelled', input: ['mint'], reads: 'the 20 largest token accounts and their owners' },
+  { id: 'grad', no: 5, name: 'ORIEL', role: 'GRADUATES', look: 'oriel', gadget: 'cap', job: 'coins graduating to PumpSwap right now', input: [], reads: 'pump.fun\'s migration wallet, one transaction per graduation' },
+  { id: 'link', no: 6, name: 'KNOT', role: 'LINKS', look: 'knot', gadget: 'string', job: 'shows if two wallets are connected', input: ['wallet', 'wallet'], reads: 'the last 1,000 transactions of both wallets and who funded each one first' },
+  { id: 'watch', no: 7, name: 'ARGUS', role: 'WATCH', look: 'argus', gadget: 'binoculars', job: 'a wallet\'s latest moves, decoded', input: ['wallet'], reads: 'the wallet\'s last 15 transactions, balance changes per coin' },
+  { id: 'pool', no: 8, name: 'MAREA', role: 'POOLS', look: 'marea', gadget: 'bucket', job: 'PumpSwap pools paying the most LP fees', input: [], reads: 'live PumpSwap pool reserves, fee tiers and 24h volume' },
+  { id: 'rent', no: 9, name: 'OTTO', role: 'RENT', look: 'otto', gadget: 'keys', job: 'SOL locked in your empty token accounts', input: ['wallet'], reads: 'every SPL and Token-2022 account the wallet owns' },
 ];
 const AG = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
@@ -173,7 +173,7 @@ async function agentDev({ q }) {
   if (creator) step(S, t0, `pump.fun record: created by ${short(creator)}`);
   else {
     const o = await oldest(mint, 6);
-    if (!o.done) throw http(422, 'This coin has more than 6,000 transactions and pump.fun did not answer, so DEV could not reach its first one.');
+    if (!o.done) throw http(422, 'This coin has more than 6,000 transactions and pump.fun did not answer, so VERA could not reach its first one.');
     const first = o.page[o.page.length - 1]; const t = await tx(first.signature);
     creator = feePayer(t); step(S, t0, `walked ${o.seen.toLocaleString('en-US')} transactions back to the first: created by ${short(creator)}`);
   }
@@ -230,7 +230,7 @@ async function agentBundle({ q }) {
   const mint = pk(q, 'coin address').toBase58(), S = [], t0 = Date.now();
   const [mi, pc] = await Promise.all([mintInfo(mint), pumpCoin(mint)]);
   const o = await oldest(mint, 8);
-  if (!o.done) throw http(422, `This coin has more than 8,000 transactions; BUNDLE could not reach the launch block. Try HOLDERS instead.`);
+  if (!o.done) throw http(422, `This coin has more than 8,000 transactions; KESTREL could not reach the launch block. Try CENSA (holders) instead.`);
   const asc = o.page.slice().reverse().filter(s => !s.err);
   step(S, t0, `walked ${o.seen.toLocaleString('en-US')} transactions back to the launch`);
   const launchSlot = asc[0].slot;
@@ -543,7 +543,7 @@ async function agentRent({ q }) {
     links: [{ t: 'wallet on Solscan', u: 'https://solscan.io/account/' + w }],
   };
 }
-// RENT's one transaction: close empty accounts back to the owner, 20 per transaction; the wallet signs
+// OTTO's one transaction: close empty accounts back to the owner, 20 per transaction; the wallet signs
 async function buildClose(b) {
   const w = pk(b.wallet, 'wallet');
   const { empty } = await emptyAccounts(w.toBase58());
