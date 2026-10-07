@@ -6,7 +6,7 @@
 <title>AG3NT — docs</title>
 <meta name="description" content="How every AG3NT agent reads the chain, what it decides and the API behind it.">
 <link rel="icon" href="/img/fav.png" type="image/png">
-<link rel="stylesheet" href="/css/ag3nt.css?v=1">
+<link rel="stylesheet" href="/css/ag3nt.css?v=3">
 <style>
 .doc{display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px;max-width:1120px;margin:0 auto;padding:56px 32px 120px}
 .toc{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:2px;font:400 13px M}
@@ -65,7 +65,7 @@ pre.out{margin-top:14px;background:var(--ink);color:#e9e8e3;font:400 12px/1.5 M;
         <li><b>CLEAR</b>: nothing this agent checks raised a flag at that moment.</li>
         <li><b>CAUTION</b>: at least one amber flag, each one written out in the facts.</li>
         <li><b>RED FLAG</b>: at least one red flag, such as an active freeze authority or wallets buying in the launch block.</li>
-        <li><b>REPORT</b>: GRAD, WATCH and POOL list what they found; there is nothing to judge.</li>
+        <li><b>REPORT</b>: ORIEL, ARGUS and MAREA list what they found; there is nothing to judge.</li>
         <li><b>NO VERDICT</b>: the agent could not finish, and says why.</li>
       </ul>
     </section>
@@ -80,7 +80,7 @@ pre.out{margin-top:14px;background:var(--ink);color:#e9e8e3;font:400 12px/1.5 M;
     <section id="wallet">
       <p class="eye">05 / WALLET SAFETY</p>
       <h3>One transaction, and only if you ask</h3>
-      <p>Eight agents never touch a wallet. RENT can build a transaction that closes your <em>empty</em> token accounts (balance exactly zero) and sends their rent to you. It is built on the server, simulated, and shown in your own wallet before anything is signed. It moves no tokens. AG3NT never asks for a seed phrase or a private key.</p>
+      <p>Eight agents never touch a wallet. OTTO can build a transaction that closes your <em>empty</em> token accounts (balance exactly zero) and sends their rent to you. It is built on the server, simulated, and shown in your own wallet before anything is signed. It moves no tokens. AG3NT never asks for a seed phrase or a private key.</p>
     </section>
 
     <section id="api">
@@ -92,7 +92,7 @@ pre.out{margin-top:14px;background:var(--ink);color:#e9e8e3;font:400 12px/1.5 M;
         <tr><td><code>GET /api/run?agent=pool</code></td><td>the PumpSwap pools paying the most LP fees per SOL</td><td><button data-try="run?agent=pool">try</button></td></tr>
         <tr><td><code>GET /api/stats</code></td><td>case counts per agent, the latest cases and WANTED</td><td><button data-try="stats">try</button></td></tr>
         <tr><td><code>GET /api/case?id=1</code></td><td>one stored case file</td><td><button data-try="case?id=1">try</button></td></tr>
-        <tr><td><code>POST /api/close</code></td><td>RENT's unsigned close transactions for <code>{wallet}</code></td><td></td></tr>
+        <tr><td><code>POST /api/close</code></td><td>OTTO's unsigned close transactions for <code>{wallet}</code></td><td></td></tr>
       </tbody></table></div>
       <pre class="out" id="out" hidden></pre>
     </section>
@@ -101,10 +101,10 @@ pre.out{margin-top:14px;background:var(--ink);color:#e9e8e3;font:400 12px/1.5 M;
       <p class="eye">07 / LIMITS</p>
       <h3>Where the agents stop</h3>
       <ul>
-        <li>BUNDLE walks back at most 8,000 transactions to find the launch block.</li>
-        <li>LINK compares the last 1,000 transactions of each wallet and their first funding; an older link can exist.</li>
-        <li>DEV's launch history comes from pump.fun's own records; when pump.fun does not answer, the case says so.</li>
-        <li>HONEY's round trip is a quote, not a trade: a coin can still change after it.</li>
+        <li>KESTREL walks back at most 8,000 transactions to find the launch block.</li>
+        <li>KNOT compares the last 1,000 transactions of each wallet and their first funding; an older link can exist.</li>
+        <li>VERA's launch history comes from pump.fun's own records; when pump.fun does not answer, the case says so.</li>
+        <li>MELI's round trip is a quote, not a trade: a coin can still change after it.</li>
         <li>12 cases a minute per person, so the agents stay fast for everyone.</li>
       </ul>
     </section>
@@ -114,7 +114,7 @@ pre.out{margin-top:14px;background:var(--ink);color:#e9e8e3;font:400 12px/1.5 M;
 (() => {
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   fetch('/api/config').then(r => r.json()).then(c => {
-    document.getElementById('agd').innerHTML = c.agents.map(a => `<div class="agd"><b><span>ag3nt/${String(a.no).padStart(3, '0')}</span>${a.name}</b><dl><dt>job</dt><dd>${esc(a.job)}</dd><dt>needs</dt><dd>${a.input.length ? a.input.map(i => i === 'mint' ? 'a coin address' : 'a wallet').join(' + ') : 'nothing'}</dd><dt>reads</dt><dd>${esc(a.reads)}</dd></dl></div>`).join('');
+    document.getElementById('agd').innerHTML = c.agents.map(a => `<div class="agd"><b><span>ag3nt/${String(a.no).padStart(3, '0')}</span>${a.name} <span>· ${esc(a.role || '')}</span></b><dl><dt>job</dt><dd>${esc(a.job)}</dd><dt>needs</dt><dd>${a.input.length ? a.input.map(i => i === 'mint' ? 'a coin address' : 'a wallet').join(' + ') : 'nothing'}</dd><dt>reads</dt><dd>${esc(a.reads)}</dd></dl></div>`).join('');
   }).catch(() => {});
   const out = document.getElementById('out');
   document.addEventListener('click', async e => {
