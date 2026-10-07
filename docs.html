@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AG3NT — docs</title>
+<meta name="description" content="How every AG3NT agent reads the chain, what it decides and the API behind it.">
+<link rel="icon" href="/img/fav.png" type="image/png">
+<link rel="stylesheet" href="/css/ag3nt.css?v=1">
+<style>
+.doc{display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px;max-width:1120px;margin:0 auto;padding:56px 32px 120px}
+.toc{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:2px;font:400 13px M}
+.toc a{color:var(--mute);text-decoration:none;padding:4px 0}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.doc h1{font:700 40px M;letter-spacing:-.04em}
+.doc .meta{font:400 12px M;color:var(--faint);margin-top:4px}
+.doc section{padding-top:44px;scroll-margin-top:64px}
+.doc h3{font:800 22px I;letter-spacing:-.02em;margin:8px 0 12px}
+.doc p,.doc li{font-size:15px;color:var(--ink2);max-width:72ch}
+.doc p+p{margin-top:10px}
+.doc ul{padding-left:18px;margin-top:8px}
+.doc code{font:400 13px M;background:rgba(20,20,22,.06);padding:1px 5px}
+.agd{border-top:1px solid var(--line);padding:16px 0}
+.agd b{font:700 15px M}
+.agd b span{color:var(--faint);font-weight:400;margin-right:8px}
+.agd dl{display:grid;grid-template-columns:120px minmax(0,1fr);gap:4px 14px;margin-top:8px;font-size:14px}
+.agd dt{font:400 12px M;color:var(--mute);padding-top:2px}
+.api td{white-space:normal;vertical-align:top}
+.api td:first-child{white-space:nowrap}
+.api button{font:700 11px M;border:1.5px solid var(--ink);padding:3px 8px;background:var(--card)}
+.api button:hover{background:var(--ink);color:var(--bg)}
+pre.out{margin-top:14px;background:var(--ink);color:#e9e8e3;font:400 12px/1.5 M;padding:14px;overflow:auto;max-height:340px;white-space:pre-wrap;word-break:break-all}
+@media (max-width:800px){.doc{grid-template-columns:1fr;padding:40px 20px 100px}.toc{position:static;flex-direction:row;flex-wrap:wrap;gap:4px 14px}.agd dl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <span></span>
+  <div class="links"><a href="/#agents">agents</a><a href="/#desk">case desk</a><a href="/#live">live</a><a href="/#ranks">ranks</a><a href="/#wanted">wanted</a><a href="/docs" class="on">docs</a></div>
+  <span></span>
+</nav>
+<div class="doc">
+  <aside class="toc"><a href="#start">start here</a><a href="#agents">the agents</a><a href="#verdicts">verdicts</a><a href="#record">the record</a><a href="#wallet">wallet safety</a><a href="#api">api</a><a href="#limits">limits</a></aside>
+  <article>
+    <h1>ag3nt docs</h1>
+    <p class="meta">4 min read</p>
+
+    <section id="start">
+      <p class="eye">01 / START HERE</p>
+      <h3>What an agent is here</h3>
+      <p>An AG3NT agent is a small program with one job. It takes a coin or a wallet address, reads public Solana data, and writes a case file: a verdict, the facts behind it, the steps it took and links to check everything yourself.</p>
+      <p>No language model decides anything. The same input at the same moment gives the same reading. Type a question on the home page and it is routed to the agent whose job matches the words; paste one address without words and you pick the agent.</p>
+    </section>
+
+    <section id="agents">
+      <p class="eye">02 / THE AGENTS</p>
+      <h3>What each one reads and decides</h3>
+      <div id="agd"></div>
+    </section>
+
+    <section id="verdicts">
+      <p class="eye">03 / VERDICTS</p>
+      <h3>CLEAR is not "safe"</h3>
+      <ul>
+        <li><b>CLEAR</b>: nothing this agent checks raised a flag at that moment.</li>
+        <li><b>CAUTION</b>: at least one amber flag, each one written out in the facts.</li>
+        <li><b>RED FLAG</b>: at least one red flag, such as an active freeze authority or wallets buying in the launch block.</li>
+        <li><b>REPORT</b>: GRAD, WATCH and POOL list what they found; there is nothing to judge.</li>
+        <li><b>NO VERDICT</b>: the agent could not finish, and says why.</li>
+      </ul>
+    </section>
+
+    <section id="record">
+      <p class="eye">04 / THE RECORD</p>
+      <h3>Every case is public</h3>
+      <p>Each run is stored with its inputs, verdict and full result, and gets a case number and a link (<code>/?case=123</code>). The inputs are public addresses. The LIVE list, the agents' case counts and their ranks are all counted from this record; nothing is seeded.</p>
+      <p>WANTED requests are stored the same way. One vote per person per request.</p>
+    </section>
+
+    <section id="wallet">
+      <p class="eye">05 / WALLET SAFETY</p>
+      <h3>One transaction, and only if you ask</h3>
+      <p>Eight agents never touch a wallet. RENT can build a transaction that closes your <em>empty</em> token accounts (balance exactly zero) and sends their rent to you. It is built on the server, simulated, and shown in your own wallet before anything is signed. It moves no tokens. AG3NT never asks for a seed phrase or a private key.</p>
+    </section>
+
+    <section id="api">
+      <p class="eye">06 / API</p>
+      <h3>Everything the page uses is public</h3>
+      <div class="tw"><table class="api"><thead><tr><th>endpoint</th><th>what it returns</th><th></th></tr></thead><tbody>
+        <tr><td><code>GET /api/config</code></td><td>the roster and, once launched, the CA</td><td><button data-try="config">try</button></td></tr>
+        <tr><td><code>GET /api/run?agent=grad</code></td><td>runs an agent; add <code>q</code> (and <code>q2</code> for LINK) for an address</td><td><button data-try="run?agent=grad">try</button></td></tr>
+        <tr><td><code>GET /api/run?agent=pool</code></td><td>the PumpSwap pools paying the most LP fees per SOL</td><td><button data-try="run?agent=pool">try</button></td></tr>
+        <tr><td><code>GET /api/stats</code></td><td>case counts per agent, the latest cases and WANTED</td><td><button data-try="stats">try</button></td></tr>
+        <tr><td><code>GET /api/case?id=1</code></td><td>one stored case file</td><td><button data-try="case?id=1">try</button></td></tr>
+        <tr><td><code>POST /api/close</code></td><td>RENT's unsigned close transactions for <code>{wallet}</code></td><td></td></tr>
+      </tbody></table></div>
+      <pre class="out" id="out" hidden></pre>
+    </section>
+
+    <section id="limits">
+      <p class="eye">07 / LIMITS</p>
+      <h3>Where the agents stop</h3>
+      <ul>
+        <li>BUNDLE walks back at most 8,000 transactions to find the launch block.</li>
+        <li>LINK compares the last 1,000 transactions of each wallet and their first funding; an older link can exist.</li>
+        <li>DEV's launch history comes from pump.fun's own records; when pump.fun does not answer, the case says so.</li>
+        <li>HONEY's round trip is a quote, not a trade: a coin can still change after it.</li>
+        <li>12 cases a minute per person, so the agents stay fast for everyone.</li>
+      </ul>
+    </section>
+  </article>
+</div>
+<script>
+(() => {
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  fetch('/api/config').then(r => r.json()).then(c => {
+    document.getElementById('agd').innerHTML = c.agents.map(a => `<div class="agd"><b><span>ag3nt/${String(a.no).padStart(3, '0')}</span>${a.name}</b><dl><dt>job</dt><dd>${esc(a.job)}</dd><dt>needs</dt><dd>${a.input.length ? a.input.map(i => i === 'mint' ? 'a coin address' : 'a wallet').join(' + ') : 'nothing'}</dd><dt>reads</dt><dd>${esc(a.reads)}</dd></dl></div>`).join('');
+  }).catch(() => {});
+  const out = document.getElementById('out');
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-try]'); if (!b) return;
+    out.hidden = false; out.textContent = 'GET /api/' + b.dataset.try + ' …';
+    try { const r = await fetch('/api/' + b.dataset.try); const j = await r.json(); out.textContent = 'GET /api/' + b.dataset.try + ' → ' + r.status + '\n' + JSON.stringify(j, null, 2).slice(0, 6000); }
+    catch (err) { out.textContent = String(err); }
+  });
+  const links = [...document.querySelectorAll('.toc a')];
+  addEventListener('scroll', () => { let cur = null; for (const a of links) { const s = document.querySelector(a.getAttribute('href')); if (s && s.getBoundingClientRect().top < 140) cur = a; } links.forEach(a => a.classList.toggle('on', a === cur)); }, { passive: true });
+})();
+</script>
+</body>
+</html>

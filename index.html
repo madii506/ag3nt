@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AG3NT</title>
+<meta name="description" content="pump.fun agents. one trench job each. Paste a coin or a wallet and the right agent takes the case.">
+<meta name="theme-color" content="#f3f2ee">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AG3NT">
+<meta property="og:description" content="pump.fun agents. one trench job each.">
+<meta property="og:image" content="/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AG3NT">
+<meta name="twitter:description" content="pump.fun agents. one trench job each.">
+<meta name="twitter:image" content="/img/og.jpg">
+<link rel="icon" href="/img/fav.png" type="image/png" sizes="64x64">
+<link rel="icon" href="/img/fav-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/apple.png">
+<link rel="preload" href="/fonts/SpaceMono-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/SpaceMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/ag3nt.css?v=1">
+</head>
+<body>
+<canvas id="field" aria-hidden="true"></canvas>
+
+<div class="scam" id="scam"><span class="dot"></span><span id="scamTxt">OFFICIAL TOKEN $AG3NT is not launched yet. Anyone posting a CA before it shows here is not us.</span></div>
+
+<nav id="nav">
+  <span></span>
+  <div class="links" id="links"><a href="#agents">agents</a><a href="#desk">case desk</a><a href="#live">live</a><a href="#ranks">ranks</a><a href="#wanted">wanted</a><a href="/docs">docs</a></div>
+  <div class="nr"><button class="wbtn" id="walletBtn" type="button"><i></i><span id="walletLabel">connect</span></button></div>
+</nav>
+
+<header class="hero" id="top">
+  <img class="face" src="/img/agent.png" alt="" width="128" height="128">
+  <h1 class="word" aria-label="ag3nt">ag<span>3</span>nt</h1>
+  <p class="line">pump.fun agents. one trench job each.</p>
+  <form class="dispatch" id="dispatch" autocomplete="off">
+    <input id="dIn" spellcheck="false" autocapitalize="off" placeholder="paste a coin, a wallet, or describe the job" aria-label="what should an agent check">
+    <button type="submit">CHECK</button>
+  </form>
+  <div class="route" id="route" aria-live="polite"></div>
+  <div class="chips" id="chips">
+    <button type="button" data-ask="is this dev a serial rugger?">is this dev a serial rugger?</button>
+    <button type="button" data-ask="was this launch bundled?">was this launch bundled?</button>
+    <button type="button" data-ask="can i sell this coin?">can i sell this coin?</button>
+    <button type="button" data-ask="what just graduated?">what just graduated?</button>
+    <button type="button" data-ask="are these two wallets linked?">are these two wallets linked?</button>
+    <button type="button" data-ask="how much rent is stuck in my wallet?">how much rent is stuck in my wallet?</button>
+  </div>
+</header>
+
+<main>
+  <section class="band" id="agents">
+    <div class="wrap">
+      <p class="eye">01 — THE AGENTS</p>
+      <h2>Nine agents. Each one does one job, and only reads the chain.</h2>
+      <div class="roster" id="roster"></div>
+    </div>
+  </section>
+
+  <section class="band alt" id="desk">
+    <div class="wrap">
+      <p class="eye">02 — CASE DESK <span class="state" id="deskState"></span></p>
+      <h2>Pick an agent. Hand it the address. Get the case file.</h2>
+      <div class="desk">
+        <div class="pick" id="pick" role="tablist"></div>
+        <div class="work">
+          <div class="brief" id="brief"></div>
+          <form class="form" id="form" autocomplete="off"></form>
+          <div class="file" id="file">
+            <img class="peek" src="/img/peek.png" alt="" width="132">
+            <div id="fileIn"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="live">
+    <div class="wrap">
+      <p class="eye">03 — LIVE <span class="state" id="liveState"></span></p>
+      <h2>Every case is public. These are the latest.</h2>
+      <ol class="cases" id="cases"></ol>
+    </div>
+  </section>
+
+  <section class="band alt" id="ranks">
+    <div class="wrap">
+      <p class="eye">04 — RANKS</p>
+      <h2>Agents climb by cases closed. Nobody gets promoted for free.</h2>
+      <ol class="ladder" id="ladder">
+        <li><b>RECRUIT</b><span>0 cases</span></li>
+        <li><b>FIELD AGENT</b><span>25 cases</span></li>
+        <li><b>SPECIAL AGENT</b><span>100 cases</span></li>
+        <li><b>DIRECTOR</b><span>500 cases</span></li>
+      </ol>
+      <div class="climb" id="climb"></div>
+    </div>
+  </section>
+
+  <section class="band" id="wanted">
+    <div class="wrap">
+      <p class="eye">05 — WANTED</p>
+      <h2>No agent for your job yet? Post it. The most wanted one gets the next number.</h2>
+      <form class="want" id="wantForm" autocomplete="off">
+        <span class="pre">an agent that</span>
+        <input id="wantIn" maxlength="140" spellcheck="false" placeholder="tells me when a dev wallet sells">
+        <button type="submit">POST</button>
+      </form>
+      <ol class="wlist" id="wlist"></ol>
+    </div>
+  </section>
+
+  <section class="band alt" id="faq">
+    <div class="wrap">
+      <p class="eye">06 — QUESTIONS</p>
+      <h2>The obvious ones.</h2>
+      <div class="qa">
+        <details><summary>Are the agents AI?</summary><p>No language model decides anything. Each agent is a fixed program with one job that reads public Solana data: RPC, pump.fun's coin records, Jupiter quotes and Dexscreener. The same input gives the same reading, and every case file lists the steps it took.</p></details>
+        <details><summary>Do I have to connect a wallet?</summary><p>No. Eight agents only read. RENT can also close your empty token accounts and send the rent back to you; only then does your wallet show a transaction to sign. Closing an empty account moves no tokens.</p></details>
+        <details><summary>How sure is a verdict?</summary><p>A verdict is what the chain shows at that moment: CLEAR means nothing the agent checks raised a flag, not that a coin is safe. Each flag says exactly what triggered it, so you can check it yourself on Solscan.</p></details>
+        <details><summary>Why did BUNDLE refuse a coin?</summary><p>To find the launch block it walks the coin's history back to the first transaction. Coins with more than 8,000 transactions are too long a walk for one request; HOLDERS still works on them.</p></details>
+        <details><summary>Are cases really public?</summary><p>Yes. Every run is stored with its result and gets a case number and a link. The inputs are public addresses, so nothing private is kept. Don't paste anything you wouldn't post.</p></details>
+        <details><summary>What does $AG3NT do?</summary><p>It's the coin of the unit. The agents work with or without it, and nothing on this page is paid. When it launches, the address shows in the bar at the top of this page and nowhere else first.</p></details>
+        <details><summary>Is AG3NT part of pump.fun?</summary><p>No. AG3NT is independent. It reads public pump.fun and PumpSwap data the same way anyone can.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="modal" id="wModal" hidden>
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="wTitle">
+    <div class="mhead"><h3 id="wTitle">connect</h3><button class="x" id="wClose" type="button" aria-label="close">esc</button></div>
+    <div id="wList"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<span class="sr" id="sr" aria-live="polite"></span>
+
+<script src="/js/ag3nt.js?v=1"></script>
+</body>
+</html>
